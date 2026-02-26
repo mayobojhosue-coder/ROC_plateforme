@@ -5,18 +5,19 @@
 <title>Index</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { 
-    font-family: Arial, sans-serif; 
-    text-align:center; 
-    padding:50px; 
-    background: #fff;
-    color: #0b3d91; 
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+/* 🌌 FOND IMAGE SPIRITUEL */
+body {
+    font-family: Arial, sans-serif;
+    margin:0;
+    padding:50px;
+    min-height:100vh;
+    color:#f5f7ff;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    background: url('https://images.unsplash.com/photo-1606162195458-7a9e8f1b8f72?auto=format&fit=crop&w=1400&q=80') no-repeat center center fixed;
+    background-size: cover;
 }
 
 /* SPLASH SCREEN */
@@ -24,7 +25,7 @@ body {
     position: fixed;
     top:0; left:0;
     width: 100%; height: 100%;
-    background: #fff;
+    background: rgba(0,0,0,0.6);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -38,29 +39,31 @@ body {
     height: 100px;
     border-radius: 50%;
     background: linear-gradient(135deg,#0b3d91,#144ea1);
+    border:2px solid #ffd966;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 50px;
     color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     margin-bottom: 20px;
     animation: pulse 1.5s infinite alternate;
 }
 
 h1.splashTitle {
     font-size: 2em;
-    color: #0b3d91;
+    color: #ffd966;
     margin-bottom: 10px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
 }
 
 .splashPhrase {
     font-family: 'Georgia', serif;
     font-size: 1.2em;
-    color: #144ea1;
+    color: #f5f7ff;
     white-space: nowrap;
     overflow: hidden;
-    border-right: .15em solid #144ea1;
+    border-right: .15em solid #ffd966;
     width: 20ch;
     animation: typing 4s steps(20) 1, blink .75s step-end infinite;
 }
@@ -80,8 +83,6 @@ h1.splashTitle {
     50% { border-color: transparent; }
 }
 
-/* FIN SPLASH SCREEN */
-
 /* LOGO + TITRE DE LA PAGE */
 .logoContainer {
     display: flex;
@@ -95,12 +96,13 @@ h1.splashTitle {
     height: 60px;
     border-radius: 50%;
     background: linear-gradient(135deg, #0b3d91, #144ea1);
+    border:2px solid #ffd966;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 30px;
     color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 .buttonContainer {
@@ -111,29 +113,31 @@ h1.splashTitle {
     margin-bottom: 30px;
 }
 
-button { 
-    padding: 12px 25px; 
-    font-size: 16px; 
-    cursor: pointer; 
-    border: none;
+button {
+    padding: 12px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    border: 2px solid #ffd966;
     border-radius: 10px;
-    background: #0b3d91; 
+    background: linear-gradient(135deg,#0b3d91,#144ea1);
     color: #fff;
     transition: transform 0.2s, box-shadow 0.2s;
     min-width: 150px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 button:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 6px 18px rgba(255,217,102,0.5);
 }
 
+/* OVERLAY MOT DE PASSE */
 #passwordOverlay {
     display: none;
     position: fixed;
     top:0; left:0;
     width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); 
+    background: rgba(0,0,0,0.7);
     color: #0b3d91;
     z-index: 1000;
     display: flex;
@@ -144,14 +148,15 @@ button:hover {
 }
 
 #passwordBox {
-    background: rgba(0,0,0,0.85); 
+    background: rgba(0,0,0,0.85);
+    border:2px solid #ffd966;
     padding: 30px;
     border-radius: 15px;
     text-align: center;
     position: relative;
     width: 100%;
     max-width: 350px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
 }
 
 #passwordBox input {
@@ -162,15 +167,17 @@ button:hover {
     text-align:center;
     margin-bottom: 15px;
     border-radius: 8px;
-    border: none;
+    border: 2px solid #ffd966;
+    background: rgba(255,255,255,0.05);
+    color: #fff;
 }
 
 #passwordBox button {
     padding: 12px 25px;
     font-size: 16px;
     border-radius: 8px;
-    border: none;
-    background: #0b3d91;
+    border: 2px solid #ffd966;
+    background: linear-gradient(135deg,#0b3d91,#144ea1);
     color: #fff;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -178,7 +185,7 @@ button:hover {
 
 #passwordBox button:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 6px 18px rgba(255,217,102,0.5);
 }
 
 #passwordBox .backArrow {
@@ -187,7 +194,7 @@ button:hover {
     left: 15px;
     font-size: 28px;
     cursor: pointer;
-    color: #fff;
+    color: #ffd966;
     transition: transform 0.2s;
 }
 
@@ -195,6 +202,7 @@ button:hover {
     transform: scale(1.2);
 }
 
+/* RESPONSIVE */
 h1 { font-size: 2em; }
 h2 { font-size: 1.3em; }
 p { font-size: 1em; }
