@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Outfit Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: Arial, sans-serif; margin:0; padding:20px; background:#fff; color:#0b3d91; }
+header { display:flex; justify-content:space-between; align-items:flex-start; }
+header h1 { font-size:1.8em; margin:0; }
+header .buttonsLeft { display:flex; flex-direction:row; align-items:center; gap:15px; }
+header .buttonsLeft h1 { margin-right:20px; }
+header .buttonsLeft button, .backButton, #addPredef, #assignOutfit{
+    padding:10px 20px; font-size:16px; border-radius:12px; border:none;
+    background: linear-gradient(135deg,#0b3d91,#144ea1); color:#fff; cursor:pointer;
+    transition:transform 0.2s, box-shadow 0.2s;
+}
+header .buttonsLeft button:hover, .backButton:hover, #addPredef:hover, #assignOutfit:hover{
+    transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.backButton { padding:10px 20px; }
+.contentBox { background: rgba(0,0,0,0.05); margin:20px auto; padding:20px; border-radius:15px;
+    width:90%; max-width:700px; text-align:left; }
+.contentBox h3 { margin-top:0; }
+.inputGroup { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
+.inputGroup input, .inputGroup select { padding:8px; border-radius:8px; border:1px solid #0b3d91; flex:1; min-width:120px; }
+.outfitCard {
+    border:1px solid #0b3d91; border-radius:12px; padding:10px; margin-bottom:10px; display:flex;
+    justify-content:space-between; align-items:center; background:rgba(11,61,145,0.05);
+}
+.colorCircle { width:20px; height:20px; border-radius:50%; display:inline-block; margin-left:5px; vertical-align:middle; border:1px solid #000; }
+.deleteBtn { background:#e53935; color:#fff; border:none; padding:5px 10px; border-radius:8px; cursor:pointer; margin-left:10px; }
+.deleteBtn:hover { transform:scale(1.05); box-shadow:0 3px 8px rgba(0,0,0,0.3); }
+@media(max-width:480px){ header{flex-direction:column; gap:10px;} header .buttonsLeft{flex-wrap:wrap; gap:10px;} }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="buttonsLeft">
+        <h1>Outfits Admin</h1>
+        <button onclick="window.location.href='acceuil_admin.html'">Acceuil</button>
+    </div>
+    <button class="backButton" onclick="window.location.href='acceuil_admin.html'">Retour</button>
+</header>
+
+<!-- Pré-définies -->
+<div class="contentBox">
+    <h3>Ajouter une tenue pré-définie</h3>
+    <div class="inputGroup">
+        <input type="text" id="predefNom" placeholder="Nom de la tenue">
+        <input type="text" id="hautDesc" placeholder="Haut (ex: chemise)">
+        <input type="color" id="hautColor" title="Couleur du haut">
+    </div>
+    <div class="inputGroup">
+        <input type="text" id="basDesc" placeholder="Bas (ex: jean)">
+        <input type="color" id="basColor" title="Couleur du bas">
+        <input type="text" id="accessoires" placeholder="Accessoires">
+    </div>
+    <button id="addPredef">Ajouter à pré-définies</button>
+</div>
+
+<div class="contentBox">
+    <h3>Tenues pré-définies</h3>
+    <div id="predefList"></div>
+</div>
+
+<!-- Assignation -->
+<div class="contentBox">
+    <h3>Assigner une tenue à un jour</h3>
+    <div class="inputGroup">
+        <select id="selectPredef"></select>
+        <input type="date" id="assignDate">
+    </div>
+    <button id="assignOutfit">envoyé aux membres</button>
+</div>
+
+<!-- Outfits envoyés au public (admin peut supprimer) -->
+<div class="contentBox">
+    <h3>Outfits envoyés au public</h3>
+    <div id="outfitsList"></div>
+</div>
+
+<div id="messageBox" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%);
+background:#144ea1; color:#fff; padding:15px 25px; border-radius:12px; z-index:9999;"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, serverTimestamp, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-XXXX-XXXX",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9c9d6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Elements pré-def
+const predefNom = document.getElementById("predefNom");
+const hautDesc = document.getElementById("hautDesc");
+const hautColor = document.getElementById("hautColor");
+const basDesc = document.getElementById("basDesc");
+const basColor = document.getElementById("basColor");
+const accessoires = document.getElementById("accessoires");
+const addPredefBtn = document.getElementById("addPredef");
+const predefList = document.getElementById("predefList");
+const selectPredef = document.getElementById("selectPredef");
+const assignDate = document.getElementById("assignDate");
+const assignOutfitBtn = document.getElementById("assignOutfit");
+const outfitsList = document.getElementById("outfitsList");
+const messageBox = document.getElementById("messageBox");
+
+function showMessage(text,duration=3000){
+    messageBox.textContent=text;
+    messageBox.style.display="block";
+    setTimeout(()=>{messageBox.style.display="none";},duration);
+}
+
+// Ajouter tenue prédef
+addPredefBtn.addEventListener("click", async ()=>{
+    const nom = predefNom.value.trim();
+    if(!nom) return showMessage("Veuillez donner un nom à la tenue !");
+    try{
+        await addDoc(collection(db,"predefOutfits"),{
+            nom,
+            haut: hautDesc.value,
+            hautCouleur: hautColor.value,
+            bas: basDesc.value,
+            basCouleur: basColor.value,
+            accessoires: accessoires.value,
+            timestamp: serverTimestamp()
+        });
+        predefNom.value=""; hautDesc.value=""; basDesc.value=""; accessoires.value="";
+        showMessage("Tenue ajoutée !");
+    }catch(e){console.error(e); showMessage("Erreur lors de l'ajout");}
+});
+
+// Afficher tenues prédef
+onSnapshot(collection(db,"predefOutfits"), snapshot=>{
+    predefList.innerHTML="";
+    selectPredef.innerHTML="";
+    snapshot.forEach(docSnap=>{
+        const data = docSnap.data();
+        const div = document.createElement("div");
+        div.className="outfitCard";
+        div.innerHTML = `<div>
+            <strong>${data.nom}</strong> - Haut: ${data.haut} <span class="colorCircle" style="background-color:${data.hautCouleur}"></span>
+            , Bas: ${data.bas} <span class="colorCircle" style="background-color:${data.basCouleur}"></span>, Acc: ${data.accessoires}
+        </div>`;
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent="Supprimer";
+        delBtn.className="deleteBtn";
+        delBtn.addEventListener("click", async ()=>{
+            if(confirm("Supprimer cette tenue pré-définie ?")){
+                try{
+                    await deleteDoc(doc(db,"predefOutfits",docSnap.id));
+                    predefList.removeChild(div);
+                    showMessage("Tenue pré-définie supprimée !");
+                }catch(e){console.error(e); showMessage("Erreur lors de la suppression");}
+            }
+        });
+        div.appendChild(delBtn);
+        predefList.appendChild(div);
+
+        const option = document.createElement("option");
+        option.value = docSnap.id;
+        option.textContent = data.nom;
+        selectPredef.appendChild(option);
+    });
+});
+
+// Assigner tenue à outfit (vers public)
+assignOutfitBtn.addEventListener("click", async ()=>{
+    const predefId = selectPredef.value;
+    const dateVal = assignDate.value;
+    if(!predefId || !dateVal) return showMessage("Sélectionnez une tenue et une date !");
+    try{
+        const docRef = doc(db,"predefOutfits",predefId);
+        const snap = await getDoc(docRef);
+        const data = snap.data();
+        if(!data) return showMessage("Erreur récupération tenue");
+
+        const docOutfit = await addDoc(collection(db,"outfits"),{
+            haut: data.haut, hautCouleur: data.hautCouleur,
+            bas: data.bas, basCouleur: data.basCouleur,
+            accessoires: data.accessoires,
+            date: dateVal,
+            timestamp: serverTimestamp()
+        });
+        assignDate.value="";
+        showMessage("Outfit assigné !");
+    }catch(e){console.error(e); showMessage("Erreur lors de l'envoi");}
+});
+
+// Affichage des outfits envoyés au public + suppression
+onSnapshot(collection(db,"outfits"), snapshot=>{
+    outfitsList.innerHTML="";
+    snapshot.forEach(docSnap=>{
+        const data = docSnap.data();
+        const div = document.createElement("div");
+        div.className="outfitCard";
+        div.innerHTML = `<div>
+            Haut: ${data.haut} <span class="colorCircle" style="background-color:${data.hautCouleur}"></span>,
+            Bas: ${data.bas} <span class="colorCircle" style="background-color:${data.basCouleur}"></span>,
+            Acc: ${data.accessoires || "Aucun"},
+            Date: ${data.date || "Non assignée"}
+        </div>`;
+        const delBtn = document.createElement("button");
+        delBtn.textContent="Supprimer";
+        delBtn.className="deleteBtn";
+        delBtn.addEventListener("click", async ()=>{
+            if(confirm("Supprimer cet outfit du public ?")){
+                try{
+                    await deleteDoc(doc(db,"outfits",docSnap.id));
+                    showMessage("Outfit supprimé !");
+                }catch(e){console.error(e); showMessage("Erreur lors de la suppression");}
+            }
+        });
+        div.appendChild(delBtn);
+        outfitsList.appendChild(div);
+    });
+});
+</script>
+
+</body>
+</html>

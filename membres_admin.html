@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Membres Admin - Pupitres & Musiciens</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+html, body { margin:0; padding:0; width:100%; height:100%; font-family:Arial,sans-serif; background:#fff; color:#0b3d91; }
+header { display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:rgba(11,61,145,0.1); }
+header h1 { font-size:1.6em; margin:0; }
+header button { padding:8px 16px; font-size:14px; border-radius:12px; border:none; background: linear-gradient(135deg,#0b3d91,#144ea1); color:#fff; cursor:pointer; transition:0.2s; }
+header button:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+
+main { display:flex; flex-wrap:wrap; padding:10px 20px; gap:15px; min-height:calc(100% - 70px); overflow-y:auto; }
+.sectionBox { flex:1 1 45%; background:rgba(11,61,145,0.05); border:1px solid #0b3d91; border-radius:10px; padding:10px; min-width:220px; max-width:400px; display:flex; flex-direction:column; }
+.sectionBox h3 { display:flex; justify-content:space-between; align-items:center; margin-top:0; font-size:1.1em; }
+.sectionBox ul { list-style:none; padding-left:0; margin-top:5px; flex:1; overflow-y:auto; max-height:250px; }
+.sectionBox li { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; font-size:0.95em; }
+.sectionBox input.addName { width:70%; padding:5px 8px; margin-top:5px; border:1px solid #0b3d91; border-radius:6px; }
+.sectionBox button.addMember, .sectionBox button.deleteMember { padding:3px 8px; font-size:12px; border:none; border-radius:6px; cursor:pointer; transition:0.2s; }
+.sectionBox button.addMember { background:#0b3d91; color:#fff; margin-left:5px; }
+.sectionBox button.addMember:hover { transform:scale(1.05); box-shadow:0 3px 8px rgba(0,0,0,0.3); }
+.sectionBox button.deleteMember { background:#e53935; color:#fff; }
+.sectionBox button.deleteMember:hover { transform:scale(1.05); box-shadow:0 3px 8px rgba(0,0,0,0.3); }
+
+#sendList, #clearList { padding:10px 20px; font-size:14px; border:none; border-radius:10px; background:#144ea1; color:#fff; cursor:pointer; transition:0.2s; margin:10px auto; display:block; }
+#sendList:hover, #clearList:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+
+#messageBox { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#144ea1; color:#fff; padding:10px 20px; border-radius:10px; display:none; z-index:9999; }
+
+@media(max-width:800px){ main { flex-direction:column; } }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Pupitres - Admin</h1>
+    <button onclick="window.location.href='acceuil_admin.html'">Retour</button>
+</header>
+
+<main id="sectionsContainer"></main>
+
+<button id="sendList">Envoyer la liste complète</button>
+<button id="clearList">Supprimer toute la liste des membres</button>
+
+<div id="messageBox"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-lZEwvyiN-5IhCY0Yqpt_ZqYbbu4s",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9c9d6",
+  measurementId: "G-262B1D5NJV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const sections = ["Soprano","Alto","Ténor","Basse","Musiciens","Sono"];
+const container = document.getElementById("sectionsContainer");
+const messageBox = document.getElementById("messageBox");
+
+// pour garder les noms côté admin
+const membresParSection = {}; 
+
+function showMessage(msg,duration=3000){
+    messageBox.textContent=msg;
+    messageBox.style.display="block";
+    setTimeout(()=>{messageBox.style.display="none";},duration);
+}
+
+// créer sections avec input
+sections.forEach(sec=>{
+    membresParSection[sec]=[];
+    const box=document.createElement("div");
+    box.className="sectionBox";
+    box.innerHTML=`
+        <h3>${sec}</h3>
+        <ul id="${sec.replace(/\s/g,'')}List"></ul>
+        <div style="display:flex; gap:5px; margin-top:5px;">
+            <input class="addName" placeholder="Nom membre">
+            <button class="addMember">Ajouter</button>
+        </div>`;
+    container.appendChild(box);
+
+    const ul=box.querySelector("ul");
+    const input=box.querySelector("input.addName");
+    const addBtn=box.querySelector("button.addMember");
+
+    addBtn.addEventListener("click", ()=>{
+        const nom=input.value.trim();
+        if(nom==="") return;
+
+        // ajout local
+        membresParSection[sec].push(nom);
+
+        const li=document.createElement("li");
+        li.textContent=nom;
+        const delBtn=document.createElement("button");
+        delBtn.textContent="x";
+        delBtn.className="deleteMember";
+        delBtn.addEventListener("click", ()=>{
+            ul.removeChild(li);
+            membresParSection[sec] = membresParSection[sec].filter(m=>m!==nom);
+        });
+        li.appendChild(delBtn);
+        ul.appendChild(li);
+        input.value="";
+    });
+});
+
+// Charger la liste depuis Firestore au démarrage
+async function loadFromFirestore(){
+    const q = query(collection(db,"membres"), orderBy("timestamp"));
+    const snapshot = await getDocs(q);
+    snapshot.forEach(docSnap=>{
+        const data = docSnap.data();
+        if(data.section && data.nom && membresParSection[data.section]){
+            // vérifier si déjà ajouté
+            if(!membresParSection[data.section].includes(data.nom)){
+                membresParSection[data.section].push(data.nom);
+                const ul = document.getElementById(data.section.replace(/\s/g,'')+"List");
+                const li = document.createElement("li");
+                li.textContent = data.nom;
+                const delBtn = document.createElement("button");
+                delBtn.textContent="x";
+                delBtn.className="deleteMember";
+                delBtn.addEventListener("click", ()=>{
+                    ul.removeChild(li);
+                    membresParSection[data.section] = membresParSection[data.section].filter(m=>m!==data.nom);
+                });
+                li.appendChild(delBtn);
+                ul.appendChild(li);
+            }
+        }
+    });
+}
+
+loadFromFirestore();
+
+// Envoyer la liste vers Firestore mais **ne pas vider la liste admin**
+document.getElementById("sendList").addEventListener("click", async ()=>{
+    try{
+        // supprimer Firestore pour éviter doublons
+        const snapshot=await getDocs(collection(db,"membres"));
+        for(const d of snapshot.docs){ await deleteDoc(doc(db,"membres",d.id)); }
+
+        // envoyer la liste actuelle
+        for(const sec of sections){
+            const colRef=collection(db,"membres");
+            for(const nom of membresParSection[sec]){
+                await addDoc(colRef,{nom,section:sec,timestamp:serverTimestamp()});
+            }
+        }
+        showMessage("Liste envoyée et actualisée côté membres !");
+    }catch(e){console.error(e); showMessage("Erreur lors de l'envoi !");}
+});
+
+// supprimer toute la liste Firestore (optionnel)
+document.getElementById("clearList").addEventListener("click", async ()=>{
+    if(confirm("Supprimer toute la liste du ROC ?")){
+        try{
+            const snapshot=await getDocs(collection(db,"membres"));
+            for(const d of snapshot.docs){ await deleteDoc(doc(db,"membres",d.id)); }
+            showMessage("Liste des membres supprimée !");
+        }catch(e){console.error(e); showMessage("Erreur lors de la suppression !");}
+    }
+});
+</script>
+
+</body>
+</html>

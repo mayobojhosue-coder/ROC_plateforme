@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Répertoire Journée</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: Arial, sans-serif; margin:0; padding:20px; background:#f9f9f9; color:#0b3d91; }
+header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+header h1 { font-size:1.8em; margin:0; }
+header button { padding:10px 20px; font-size:16px; border-radius:12px; border:none; background: linear-gradient(135deg,#0b3d91,#144ea1); color:#fff; cursor:pointer; transition:0.2s; }
+header button:hover { transform: scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+#displayList { background:#f0f4ff; padding:15px; border-radius:10px; margin:20px auto; max-width:600px; }
+#displayList h4 { margin:8px 0; font-size:1.2em; }
+#displayList ul { list-style:none; padding-left:0; margin:5px 0; }
+#displayList li { padding:5px 8px; background:#fff; margin-bottom:4px; border-radius:6px; }
+#messageBox { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#0b3d91; color:#fff; padding:8px 16px; border-radius:8px; display:none; z-index:9999; }
+#historyBtn { padding:8px 14px; font-size:14px; border:none; border-radius:8px; background:#0b3d91; color:#fff; cursor:pointer; margin:10px 0; display:block; }
+#historyBtn:hover { background:#144ea1; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Répertoire Journée</h1>
+    <button onclick="window.location.href='acceuil.html'">Retour</button>
+</header>
+
+<button id="historyBtn">Historique</button>
+
+<div id="displayList">
+    <p>Chargement du répertoire...</p>
+</div>
+<div id="messageBox"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-lZEwvyiN-5IhCY0Yqpt_ZqYbbu4s",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9d6",
+  measurementId: "G-262B1D5NJV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const displayListEl = document.getElementById("displayList");
+const messageBox = document.getElementById("messageBox");
+const historyBtn = document.getElementById("historyBtn");
+
+function showMessage(msg,duration=2500){
+    messageBox.textContent = msg;
+    messageBox.style.display="block";
+    setTimeout(()=>{messageBox.style.display="none";},duration);
+}
+
+async function loadRepertoire(){
+    displayListEl.innerHTML = "<p>Chargement du répertoire...</p>";
+    try{
+        const q = query(collection(db,"repertoire_jours"), orderBy("timestamp","desc"));
+        const snapshot = await getDocs(q);
+        if(snapshot.empty){
+            displayListEl.innerHTML = "<p>Aucun répertoire disponible.</p>";
+            return;
+        }
+        displayListEl.innerHTML = "";
+        snapshot.forEach(docSnap=>{
+            const data = docSnap.data();
+            displayListEl.innerHTML += `<h4>${data.titre} ${data.date ? "(" + data.date + ")" : ""}</h4>`;
+            if(data.adoration?.length){
+                displayListEl.innerHTML += "<h4>Adoration</h4><ul>" + data.adoration.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+            }
+            if(data.louange?.length){
+                displayListEl.innerHTML += "<h4>Louange</h4><ul>" + data.louange.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+            }
+        });
+    }catch(e){ 
+        console.error(e); 
+        displayListEl.innerHTML = "<p>Erreur lors du chargement du répertoire.</p>";
+        showMessage("Erreur de chargement !");
+    }
+}
+
+// Charger le répertoire au démarrage
+loadRepertoire();
+
+// Historique
+historyBtn.addEventListener("click", async ()=>{
+    displayListEl.innerHTML="<h4>Historique des listes</h4>";
+    try{
+        const q = query(collection(db,"repertoire_jours"), orderBy("timestamp","desc"));
+        const snapshot = await getDocs(q);
+        if(snapshot.empty){
+            displayListEl.innerHTML += "<p>Aucun historique disponible.</p>";
+            return;
+        }
+        snapshot.forEach(docSnap=>{
+            const data = docSnap.data();
+            displayListEl.innerHTML += `<h4>${data.titre} ${data.date ? "(" + data.date + ")" : ""}</h4>`;
+            if(data.adoration?.length){
+                displayListEl.innerHTML += "<h4>Adoration</h4><ul>" + data.adoration.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+            }
+            if(data.louange?.length){
+                displayListEl.innerHTML += "<h4>Louange</h4><ul>" + data.louange.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+            }
+        });
+    }catch(e){
+        console.error(e);
+        showMessage("Erreur lors du chargement de l'historique !");
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Programmes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #fff;
+    color: #0b3d91;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+header {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+}
+header h1 { font-size:1.8em; margin:0; }
+header .backButton {
+    padding:10px 20px;
+    font-size:16px;
+    border-radius:12px;
+    border:none;
+    background: linear-gradient(135deg,#0b3d91,#144ea1);
+    color:#fff;
+    cursor:pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+header .backButton:hover { transform: scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+
+.contentBox {
+    background: rgba(0,0,0,0.05);
+    margin: 30px auto;
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+}
+
+.programmeItem {
+    background: rgba(11,61,145,0.1);
+    margin:10px 0;
+    padding:10px;
+    border-radius:10px;
+}
+
+.programmeItem h4 { margin:0 0 5px 0; }
+.programmeItem p { margin:0; }
+
+@media (max-width:480px){
+    header h1 { font-size:1.5em; }
+    header .backButton { font-size:14px; padding:8px 16px; }
+    .contentBox { padding:15px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Programmes</h1>
+<button class="backButton" onclick="window.location.href='acceuil.html'">Retour</button>
+</header>
+
+<div class="contentBox">
+<h3>Programmes prévus :</h3>
+<div id="programmesList"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-lZEwvyiN-5IhCY0Yqpt_ZqjYbbu4s",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9c9d6",
+  measurementId: "G-262B1D5NJV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const programmesList = document.getElementById('programmesList');
+
+const q = query(collection(db,"programmes"), orderBy("timestamp"));
+onSnapshot(q,(snapshot)=>{
+    programmesList.innerHTML = "";
+    snapshot.forEach(docSnap=>{
+        const data = docSnap.data();
+        const div = document.createElement('div');
+        div.className = "programmeItem";
+        div.innerHTML = `<h4>${data.day} à ${data.time}</h4><p>${data.texte}</p>`;
+        programmesList.appendChild(div);
+    });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Outfits</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin:0; padding:20px;
+    background:#fff; color:#0b3d91;
+}
+header {
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;
+}
+header h1 { font-size:1.8em; margin:0; }
+header button {
+    padding:10px 20px; font-size:16px; border-radius:12px; border:none;
+    background: linear-gradient(135deg,#0b3d91,#144ea1); color:#fff; cursor:pointer;
+    transition:transform 0.2s, box-shadow 0.2s;
+}
+header button:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.3);}
+.outfitCard {
+    border:1px solid #0b3d91; border-radius:12px; padding:15px; margin-bottom:15px;
+    background:rgba(11,61,145,0.05);
+}
+.outfitCard h3 { margin:0 0 10px 0; font-size:1.2em; }
+.colorCircle { width:20px; height:20px; border-radius:50%; display:inline-block; margin-left:5px; vertical-align:middle; border:1px solid #000; }
+.infoGroup { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:5px; align-items:center; }
+.dateLabel { font-weight:bold; margin-left:auto; }
+@media(max-width:480px){
+    .infoGroup { flex-direction:column; align-items:flex-start; }
+    header { flex-direction:column; gap:10px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Outfits Assignés</h1>
+    <button onclick="window.location.href='acceuil.html'">Retour</button>
+</header>
+
+<div id="outfitsContainer"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-XXXX-XXXX",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9c9d6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const container = document.getElementById("outfitsContainer");
+
+// Observer la collection "outfits" en temps réel, tri par timestamp
+const q = query(collection(db,"outfits"), orderBy("timestamp"));
+onSnapshot(q, snapshot => {
+    container.innerHTML = "";
+    snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const card = document.createElement("div");
+        card.className = "outfitCard";
+        card.innerHTML = `
+            <h3>${data.haut} + ${data.bas}</h3>
+            <div class="infoGroup">
+                <span>Haut <span class="colorCircle" style="background-color:${data.hautCouleur}"></span></span>
+                <span>Bas <span class="colorCircle" style="background-color:${data.basCouleur}"></span></span>
+                <span>Accessoires: ${data.accessoires || "Aucun"}</span>
+                <span class="dateLabel">${data.date ? new Date(data.date).toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : "Date non assignée"}</span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+});
+</script>
+
+</body>
+</html>

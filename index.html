@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Index</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { 
+    font-family: Arial, sans-serif; 
+    text-align:center; 
+    padding:50px; 
+    background: #fff;
+    color: #0b3d91; 
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* SPLASH SCREEN */
+#splashScreen {
+    position: fixed;
+    top:0; left:0;
+    width: 100%; height: 100%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    transition: opacity 0.5s ease;
+}
+
+.logoCircleSplash {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#0b3d91,#144ea1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 50px;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    margin-bottom: 20px;
+    animation: pulse 1.5s infinite alternate;
+}
+
+h1.splashTitle {
+    font-size: 2em;
+    color: #0b3d91;
+    margin-bottom: 10px;
+}
+
+.splashPhrase {
+    font-family: 'Georgia', serif;
+    font-size: 1.2em;
+    color: #144ea1;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: .15em solid #144ea1;
+    width: 20ch;
+    animation: typing 4s steps(20) 1, blink .75s step-end infinite;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+}
+
+@keyframes typing {
+    from { width: 0; }
+    to { width: 20ch; }
+}
+
+@keyframes blink {
+    50% { border-color: transparent; }
+}
+
+/* FIN SPLASH SCREEN */
+
+/* LOGO + TITRE DE LA PAGE */
+.logoContainer {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.logoCircle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0b3d91, #144ea1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.buttonContainer {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+button { 
+    padding: 12px 25px; 
+    font-size: 16px; 
+    cursor: pointer; 
+    border: none;
+    border-radius: 10px;
+    background: #0b3d91; 
+    color: #fff;
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-width: 150px;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+#passwordOverlay {
+    display: none;
+    position: fixed;
+    top:0; left:0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); 
+    color: #0b3d91;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#passwordBox {
+    background: rgba(0,0,0,0.85); 
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    position: relative;
+    width: 100%;
+    max-width: 350px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+#passwordBox input {
+    padding: 12px;
+    font-size: 16px;
+    width: 90%;
+    max-width: 250px;
+    text-align:center;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: none;
+}
+
+#passwordBox button {
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background: #0b3d91;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#passwordBox button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+#passwordBox .backArrow {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #fff;
+    transition: transform 0.2s;
+}
+
+#passwordBox .backArrow:hover {
+    transform: scale(1.2);
+}
+
+h1 { font-size: 2em; }
+h2 { font-size: 1.3em; }
+p { font-size: 1em; }
+
+@media (max-width: 480px) {
+    body { padding: 20px; }
+    h1 { font-size: 1.5em; }
+    h2 { font-size: 1.1em; }
+    button { font-size: 14px; padding: 10px 20px; }
+    #passwordBox { padding: 20px; }
+    .logoCircle { width: 50px; height: 50px; font-size: 24px; }
+    .logoCircleSplash { width: 80px; height: 80px; font-size: 40px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splashScreen">
+    <div class="logoCircleSplash">&#9835;</div>
+    <h1 class="splashTitle">Le ROC - Plateforme</h1>
+    <div class="splashPhrase">Assemblé Rosée du Ciel</div>
+</div>
+
+<!-- CONTENU PRINCIPAL -->
+<div class="logoContainer" id="mainContent" style="display:none;">
+    <div class="logoCircle">&#9835;</div>
+    <h1>Le ROC - Plateforme</h1>
+</div>
+
+<div class="buttonContainer" id="mainButtons" style="display:none;">
+    <button id="btnAdmin">Responsable</button>
+    <button onclick="window.location.href='acceuil.html'">Membres</button>
+</div>
+
+<div id="passwordOverlay">
+    <div id="passwordBox">
+        <div class="backArrow" id="backArrow">&#8592;</div>
+        <h2>Entrez le mot de passe Admin</h2>
+        <input type="password" id="adminPassword" placeholder="Mot de passe">
+        <br>
+        <button id="btnSubmitPassword">Valider</button>
+        <p id="passwordMsg" style="color:#ff6b6b;"></p>
+    </div>
+</div>
+
+<script>
+/* SPLASH SCREEN */
+const splash = document.getElementById('splashScreen');
+const mainContent = document.getElementById('mainContent');
+const mainButtons = document.getElementById('mainButtons');
+
+setTimeout(() => {
+    splash.style.opacity = 0;
+    setTimeout(() => {
+        splash.style.display = 'none';
+        mainContent.style.display = 'flex';
+        mainButtons.style.display = 'flex';
+    }, 500);
+}, 5000);
+
+/* ADMIN PASSWORD */
+const btnAdmin = document.getElementById('btnAdmin');
+const passwordOverlay = document.getElementById('passwordOverlay');
+const btnSubmit = document.getElementById('btnSubmitPassword');
+const passwordInput = document.getElementById('adminPassword');
+const passwordMsg = document.getElementById('passwordMsg');
+const backArrow = document.getElementById('backArrow');
+
+btnAdmin.addEventListener('click', () => {
+    passwordOverlay.style.display = 'flex';
+    passwordInput.focus();
+});
+
+btnSubmit.addEventListener('click', () => {
+    if(passwordInput.value === "0000") {
+        window.location.href = "acceuil_admin.html";
+    } else {
+        passwordMsg.textContent = "Mot de passe incorrect !";
+        passwordInput.value = "";
+    }
+});
+
+backArrow.addEventListener('click', () => {
+    passwordOverlay.style.display = 'none';
+    passwordInput.value = "";
+    passwordMsg.textContent = "";
+});
+</script>
+
+</body>
+</html>

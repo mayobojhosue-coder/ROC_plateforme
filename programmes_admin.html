@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Programmes Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: Arial, sans-serif; margin:0; background:#fff; color:#0b3d91; padding:20px; box-sizing:border-box; }
+header { display:flex; justify-content:space-between; align-items:flex-start; }
+header h1 { font-size:1.8em; margin:0; }
+header .buttonsLeft { display:flex; flex-direction:column; align-items:flex-start; }
+header .buttonsLeft button, header .backButton, #addProgramme, #chooseDate { margin-top:10px; padding:10px 20px; font-size:16px; border-radius:12px; border:none; background:linear-gradient(135deg,#0b3d91,#144ea1); color:#fff; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; }
+header .buttonsLeft button:hover, header .backButton:hover, #addProgramme:hover, #chooseDate:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+header .backButton { padding:10px 20px; }
+textarea { width:100%; padding:10px; font-size:16px; border-radius:10px; border:1px solid #0b3d91; resize:vertical; }
+.contentBox { background: rgba(0,0,0,0.1); margin:30px auto; padding:25px; border-radius:15px; width:90%; max-width:600px; text-align:center; }
+.programmeItem { background: rgba(11,61,145,0.1); margin:10px 0; padding:10px; border-radius:10px; text-align:left; display:flex; justify-content:space-between; align-items:center; }
+.deleteButton { background:#e53935; color:#fff; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; }
+.deleteButton:hover { transform:scale(1.05); box-shadow:0 3px 8px rgba(0,0,0,0.3); }
+#datePicker, #timeInputs { display:none; margin-top:10px; }
+#timeInputs input { width:60px; padding:5px; border-radius:8px; border:1px solid #0b3d91; }
+#selectedDayBox { display:none; margin-top:10px; padding:15px; background: rgba(11,61,145,0.1); border-radius:10px; text-align:center; }
+.messageBox { position: fixed; top:20px; left:50%; transform:translateX(-50%); background:#144ea1; color:#fff; padding:15px 25px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.3); font-size:16px; z-index:9999; display:none; opacity:0.95; }
+@media (max-width:480px){
+    header h1 { font-size:1.5em; }
+    header .buttonsLeft button, header .backButton { font-size:14px; padding:8px 16px; }
+    .contentBox { padding:15px; }
+    textarea { font-size:14px; }
+    #addProgramme, #chooseDate { font-size:14px; padding:8px 16px; }
+    .deleteButton { padding:5px 10px; font-size:14px; }
+    .messageBox { font-size:14px; padding:10px 20px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+<div class="buttonsLeft">
+<h1>Acceuil</h1>
+<button onclick="window.location.href='programmes_admin.html'">Programmes</button>
+</div>
+<!-- Retour vers acceuil_admin.html -->
+<button class="backButton" onclick="window.location.href='acceuil_admin.html'">Retour</button>
+</header>
+
+<div class="contentBox">
+<p>Ajouter un programme ci-dessous :</p>
+<textarea id="programmeInput" placeholder="Écrire un programme ici..." rows="4"></textarea>
+<br>
+<button id="chooseDate">Choisir un jour</button>
+<input type="date" id="datePicker">
+<div id="timeInputs">
+<input type="number" id="hourInput" placeholder="HH" min="0" max="23"> :
+<input type="number" id="minuteInput" placeholder="MM" min="0" max="59">
+</div>
+<div id="selectedDayBox">
+<h4 id="selectedDayText"></h4>
+<p id="generatedMessage"></p>
+</div>
+<br>
+<button id="addProgramme">Ajouter le programme</button>
+</div>
+
+<div class="contentBox">
+<h3>Programmes existants :</h3>
+<div id="programmesList"></div>
+</div>
+
+<div id="messageBox" class="messageBox"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-lZEwvyiN-5IhCY0Yqpt_ZqjYbbu4s",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9c9d6",
+  measurementId: "G-262B1D5NJV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const addButton = document.getElementById('addProgramme');
+const input = document.getElementById('programmeInput');
+const programmesList = document.getElementById('programmesList');
+const messageBox = document.getElementById('messageBox');
+
+const chooseDateBtn = document.getElementById('chooseDate');
+const datePicker = document.getElementById('datePicker');
+const timeInputs = document.getElementById('timeInputs');
+const hourInput = document.getElementById('hourInput');
+const minuteInput = document.getElementById('minuteInput');
+const selectedDayBox = document.getElementById('selectedDayBox');
+const selectedDayText = document.getElementById('selectedDayText');
+const generatedMessage = document.getElementById('generatedMessage');
+
+function showMessage(text,duration=3000){
+    messageBox.textContent=text;
+    messageBox.style.display='block';
+    setTimeout(()=>{messageBox.style.display='none';},duration);
+}
+
+// Afficher calendrier
+chooseDateBtn.addEventListener('click',()=>{
+    datePicker.style.display='block';
+});
+
+// Quand date sélectionnée
+datePicker.addEventListener('change',()=>{
+    const dateValue=datePicker.value;
+    if(!dateValue) return;
+    selectedDayBox.style.display='block';
+    timeInputs.style.display='block';
+    const dateObj = new Date(dateValue);
+    const options = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    const formattedDate = dateObj.toLocaleDateString('fr-FR', options);
+    selectedDayText.textContent=`Jour choisi : ${formattedDate}`;
+    generatedMessage.textContent=`Programme prévu pour le ${formattedDate} :`;
+});
+
+// Ajouter programme
+addButton.addEventListener('click', async()=>{
+    const texte = input.value.trim();
+    const dateValue = datePicker.value;
+    const hour = parseInt(hourInput.value);
+    const minute = parseInt(minuteInput.value);
+
+    if(!texte || !dateValue || isNaN(hour) || isNaN(minute) || hour<0 || hour>23 || minute<0 || minute>59)
+        return showMessage("Veuillez remplir le texte, le jour et une heure valide !");
+
+    const formattedTime = `${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}`;
+    const dateObj = new Date(dateValue);
+    const options = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    const formattedDay = dateObj.toLocaleDateString('fr-FR', options);
+
+    try {
+        await addDoc(collection(db,"programmes"),{
+            texte: texte,
+            day: formattedDay,
+            time: formattedTime,
+            fullDate: dateValue,
+            timestamp: serverTimestamp()
+        });
+        input.value=''; datePicker.value=''; hourInput.value=''; minuteInput.value='';
+        selectedDayBox.style.display='none';
+        timeInputs.style.display='none';
+        showMessage("Programme ajouté avec succès !");
+    } catch(err){ console.error(err); showMessage("Erreur lors de l'ajout !"); }
+});
+
+// Affichage temps réel + suppression
+const q=query(collection(db,"programmes"),orderBy("timestamp"));
+onSnapshot(q,(snapshot)=>{
+    programmesList.innerHTML="";
+    snapshot.forEach(docSnap=>{
+        const data=docSnap.data();
+        const div=document.createElement('div');
+        div.className="programmeItem";
+        div.innerHTML=`<strong>${data.day} ${data.time}</strong> : ${data.texte}`;
+        const delBtn=document.createElement('button');
+        delBtn.textContent="Supprimer";
+        delBtn.className="deleteButton";
+        delBtn.addEventListener('click',async()=>{
+            if(confirm("Voulez-vous vraiment supprimer ce programme ?")){
+                try{ await deleteDoc(doc(db,"programmes",docSnap.id)); showMessage("Programme supprimé !"); }
+                catch(err){ console.error(err); showMessage("Erreur lors de la suppression !"); }
+            }
+        });
+        div.appendChild(delBtn);
+        programmesList.appendChild(div);
+    });
+});
+</script>
+
+</body>
+</html>

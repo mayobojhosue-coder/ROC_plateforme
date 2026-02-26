@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Serviteurs - Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin:0; padding:20px; background:#f0f4ff; color:#0b3d91;
+}
+header {
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;
+}
+header h1 { font-size:2em; margin:0; font-weight:600; }
+header button {
+    padding:10px 22px; font-size:16px; border-radius:12px; border:none;
+    background: linear-gradient(135deg,#0b3d91,#144ea1); color:#fff;
+    cursor:pointer; transition:0.3s; box-shadow:0 2px 6px rgba(0,0,0,0.15);
+}
+header button:hover { transform:translateY(-2px); box-shadow:0 6px 15px rgba(0,0,0,0.25); }
+
+.contentBox {
+    background:#fff; margin:0 auto; padding:25px; border-radius:15px;
+    max-width:600px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+.inputRow {
+    display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+    margin-bottom:15px;
+}
+
+.inputRow input {
+    padding:10px 12px; border:1px solid #0b3d91; border-radius:8px;
+    font-size:15px; flex:1 1 45%;
+}
+
+button.actionBtn {
+    padding:10px 18px; border:none; border-radius:8px; background:#0b3d91;
+    color:#fff; cursor:pointer; font-size:15px; transition:0.3s;
+}
+button.actionBtn:hover { background:#144ea1; transform:translateY(-2px); }
+
+#serviteursList {
+    margin-top:20px; list-style:none; padding-left:0;
+    max-height:300px; overflow-y:auto;
+    display:flex; flex-direction:column; gap:10px;
+}
+
+#serviteursList li {
+    background:#e0e7ff; padding:10px 12px; border-radius:10px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-weight:500; box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+#serviteursList li button {
+    background:#e53935; color:#fff; border:none; border-radius:6px;
+    padding:4px 8px; cursor:pointer; font-size:13px; transition:0.2s;
+}
+#serviteursList li button:hover { background:#c62828; transform:scale(1.05); }
+
+#clearList {
+    margin-top:20px; width:100%; font-size:15px;
+}
+
+#messageBox {
+    display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%);
+    background:#0b3d91; color:#fff; padding:10px 18px; border-radius:10px; z-index:9999;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Serviteurs - Admin</h1>
+    <button onclick="window.location.href='acceuil_admin.html'">Retour</button>
+</header>
+
+<div class="contentBox">
+    <div class="inputRow">
+        <input type="text" id="serviteurNom" placeholder="Nom du serviteur">
+        <input type="text" id="serviteurPupitre" placeholder="Pupitre / Rôle">
+        <button id="addServiteur" class="actionBtn">Valider</button>
+    </div>
+
+    <ul id="serviteursList"></ul>
+
+    <button id="clearList" class="actionBtn">Supprimer toute la liste</button>
+</div>
+
+<div id="messageBox"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-lZEwvyiN-5IhCY0Yqpt_ZqYbbu4s",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9d6",
+  measurementId: "G-262B1D5NJV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const listEl = document.getElementById("serviteursList");
+const nomEl = document.getElementById("serviteurNom");
+const pupitreEl = document.getElementById("serviteurPupitre");
+const messageBox = document.getElementById("messageBox");
+
+function showMessage(msg, duration=2500){
+    messageBox.textContent = msg;
+    messageBox.style.display = "block";
+    setTimeout(()=>{ messageBox.style.display="none"; }, duration);
+}
+
+async function loadServiteurs(){
+    listEl.innerHTML = "";
+    const snapshot = await getDocs(collection(db,"serviteurs"));
+    snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const li = document.createElement("li");
+        li.textContent = `${data.nom} (${data.pupitre})`;
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "x";
+        delBtn.onclick = async () => {
+            await deleteDoc(doc(db,"serviteurs",docSnap.id));
+            li.remove();
+            showMessage("Serviteur supprimé !");
+        };
+        li.appendChild(delBtn);
+        listEl.appendChild(li);
+    });
+}
+
+document.getElementById("addServiteur").addEventListener("click", async ()=>{
+    const nom = nomEl.value.trim();
+    const pupitre = pupitreEl.value.trim();
+    if(!nom || !pupitre) return;
+    await addDoc(collection(db,"serviteurs"), {nom, pupitre, timestamp:serverTimestamp()});
+    nomEl.value = "";
+    pupitreEl.value = "";
+    showMessage("Serviteur ajouté !");
+    loadServiteurs();
+});
+
+document.getElementById("clearList").addEventListener("click", async ()=>{
+    if(confirm("Supprimer toute la liste des serviteurs ?")){
+        const snapshot = await getDocs(collection(db,"serviteurs"));
+        for(const d of snapshot.docs){
+            await deleteDoc(doc(db,"serviteurs",d.id));
+        }
+        showMessage("Liste supprimée !");
+        loadServiteurs();
+    }
+});
+
+loadServiteurs();
+</script>
+
+</body>
+</html>

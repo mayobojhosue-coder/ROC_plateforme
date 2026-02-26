@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Liste de Présence Membres</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin:0; padding:0;
+    background:#f5f5f5; color:#0b3d91;
+}
+header {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 20px; background:#e0e7ff;
+}
+header h1 { font-size:1.5em; margin:0; }
+header button {
+    padding:6px 14px; font-size:13px; border-radius:8px; border:none;
+    background:#0b3d91; color:#fff; cursor:pointer;
+}
+header button:hover { background:#144ea1; }
+
+main {
+    display:flex; flex-direction:column; gap:15px; padding:15px 20px;
+}
+.listBlock {
+    background:#fff; border:1px solid #0b3d91;
+    border-radius:8px; padding:15px; box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.listBlock h2 {
+    margin-top:0; font-size:1.2em; border-bottom:1px solid #0b3d91; padding-bottom:5px;
+}
+.listBlock .sectionTitle { font-weight:bold; margin-top:10px; }
+.listBlock ul { list-style:none; padding-left:15px; margin-top:5px; }
+.listBlock li { font-size:0.95em; margin-bottom:2px; }
+.totals { font-size:0.95em; margin-top:5px; font-style:italic; color:#144ea1; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Liste de Présence</h1>
+    <button onclick="window.location.href='acceuil.html'">Retour</button>
+</header>
+
+<main id="listContainer"></main>
+
+<div id="messageBox" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%);
+    background:#0b3d91; color:#fff; padding:8px 16px; border-radius:8px; z-index:9999;"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-lZEwvyiN-5IhCY0Yqpt_ZqYbbu4s",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9d6",
+  measurementId: "G-262B1D5NJV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const container = document.getElementById("listContainer");
+const messageBox = document.getElementById("messageBox");
+
+function showMessage(msg,duration=2500){
+    messageBox.textContent=msg;
+    messageBox.style.display="block";
+    setTimeout(()=>{messageBox.style.display="none";},duration);
+}
+
+async function loadPresence(){
+    try{
+        const q = query(collection(db,"historiques_presences"), orderBy("timestamp"));
+        const snapshot = await getDocs(q);
+
+        if(snapshot.empty){ showMessage("Aucune liste disponible."); return; }
+
+        const lastDoc = snapshot.docs[snapshot.docs.length-1];
+        const data = lastDoc.data();
+
+        const block = document.createElement("div");
+        block.className = "listBlock";
+        block.innerHTML = `<h2>Liste de présence du ${data.date}</h2>`;
+        container.appendChild(block);
+
+        // Séparer Présents et Absents
+        ["presents","absents"].forEach(type=>{
+            const sectionTitle = document.createElement("div");
+            sectionTitle.className="sectionTitle";
+            sectionTitle.textContent = type==="presents" ? "Présents" : "Absents";
+            block.appendChild(sectionTitle);
+
+            const ul = document.createElement("ul");
+            block.appendChild(ul);
+
+            let count=0;
+            const seen = new Set();
+
+            data.data.forEach(section=>{
+                section[type].forEach(nom=>{
+                    const key = `${nom}-${section.section}`;
+                    if(!seen.has(key)){
+                        seen.add(key);
+                        const li = document.createElement("li");
+                        li.textContent = `${nom} (${section.section})`;
+                        ul.appendChild(li);
+                        count++;
+                    }
+                });
+            });
+
+            // Totaux
+            const total = document.createElement("div");
+            total.className="totals";
+            total.textContent = `Total ${type==="presents" ? "présents" : "absents"} : ${count}`;
+            block.appendChild(total);
+        });
+
+    }catch(e){
+        console.error(e);
+        showMessage("Erreur lors du chargement des données !");
+    }
+}
+
+loadPresence();
+</script>
+
+</body>
+</html>

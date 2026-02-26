@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Répertoire Journée - Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: Arial, sans-serif; margin:0; padding:20px; background:#fff; color:#0b3d91; }
+header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+header h1 { font-size:1.8em; margin:0; }
+header button { padding:10px 20px; font-size:16px; border-radius:12px; border:none; background: linear-gradient(135deg,#0b3d91,#144ea1); color:#fff; cursor:pointer; transition:0.2s; }
+header button:hover { transform: scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+section { margin-bottom:20px; }
+.sectionBox { background: rgba(0,0,0,0.05); padding:15px; border-radius:10px; max-width:600px; margin:auto; }
+.sectionBox h3 { margin-top:0; font-size:1.2em; border-bottom:1px solid #0b3d91; padding-bottom:4px; }
+.sectionBox ul { list-style:none; padding:0; margin-top:10px; }
+.sectionBox li { display:flex; gap:10px; margin-bottom:5px; align-items:center; }
+.sectionBox input { flex:1; padding:5px 8px; border:1px solid #0b3d91; border-radius:6px; }
+.sectionBox button.addItem { padding:5px 12px; background:#0b3d91; color:#fff; border:none; border-radius:6px; cursor:pointer; transition:0.2s; }
+.sectionBox button.addItem:hover { background:#144ea1; }
+#sendList, #clearList, #historyBtn { padding:10px 18px; font-size:14px; border:none; border-radius:8px; background:#0b3d91; color:#fff; cursor:pointer; margin:10px 20px; display:block; }
+#sendList:hover, #clearList:hover, #historyBtn:hover { background:#144ea1; }
+#messageBox { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#0b3d91; color:#fff; padding:8px 16px; border-radius:8px; display:none; z-index:9999; }
+#displayList { background:#f0f4ff; padding:15px; border-radius:10px; margin:20px auto; max-width:600px; }
+#displayList h4 { margin:5px 0; font-size:1.1em; }
+#displayList ul { list-style:none; padding-left:0; margin:5px 0; }
+#displayList li { padding:5px 8px; background:#fff; margin-bottom:4px; border-radius:6px; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Répertoire Journée - Admin</h1>
+    <button onclick="window.location.href='acceuil_admin.html'">Retour</button>
+</header>
+
+<!-- Zone pour date et titre du répertoire -->
+<section class="sectionBox">
+    <input type="date" id="repertoireDate">
+    <input type="text" id="repertoireTitle" placeholder="Titre du répertoire (ex: Répertoire du 26 février)">
+</section>
+
+<section class="sectionBox" id="adorationBox">
+    <h3>Adoration</h3>
+    <ul id="adorationList"></ul>
+    <div style="display:flex; gap:5px; margin-top:5px;">
+        <input id="adorationTitre" placeholder="Titre de la chanson">
+        <input id="adorationAuteur" placeholder="Auteur">
+        <button class="addItem" id="addAdoration">Ajouter</button>
+    </div>
+</section>
+
+<section class="sectionBox" id="louangeBox">
+    <h3>Louange</h3>
+    <ul id="louangeList"></ul>
+    <div style="display:flex; gap:5px; margin-top:5px;">
+        <input id="louangeTitre" placeholder="Titre de la chanson">
+        <input id="louangeAuteur" placeholder="Auteur">
+        <button class="addItem" id="addLouange">Ajouter</button>
+    </div>
+</section>
+
+<button id="sendList">Envoyer la liste</button>
+<button id="clearList">Supprimer la liste</button>
+<button id="historyBtn">Historique</button>
+
+<div id="messageBox"></div>
+<div id="displayList"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-lZEwvyiN-5IhCY0Yqpt_ZqYbbu4s",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9d6",
+  measurementId: "G-262B1D5NJV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const adorationListEl = document.getElementById("adorationList");
+const louangeListEl = document.getElementById("louangeList");
+const displayListEl = document.getElementById("displayList");
+const messageBox = document.getElementById("messageBox");
+
+const adorationItems = [];
+const louangeItems = [];
+
+// Fonction pour convertir date en lettres
+function formatDateToLetters(dateStr) {
+    if(!dateStr) return "";
+    const months = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+    const d = new Date(dateStr);
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day} ${month} ${year}`;
+}
+
+function showMessage(msg,duration=2500){
+    messageBox.textContent = msg;
+    messageBox.style.display="block";
+    setTimeout(()=>{messageBox.style.display="none";},duration);
+}
+
+function addItem(listArr, listEl, titreEl, auteurEl){
+    const titre = titreEl.value.trim();
+    const auteur = auteurEl.value.trim();
+    if(titre==="") return;
+    listArr.push({titre, auteur});
+    const li = document.createElement("li");
+    li.textContent = `${titre} ${auteur? "(" + auteur + ")" : ""}`;
+    listEl.appendChild(li);
+    titreEl.value=""; auteurEl.value="";
+}
+
+// Ajouter adoration
+document.getElementById("addAdoration").addEventListener("click", ()=>{ 
+    addItem(adorationItems, adorationListEl, document.getElementById("adorationTitre"), document.getElementById("adorationAuteur"));
+});
+
+// Ajouter louange
+document.getElementById("addLouange").addEventListener("click", ()=>{ 
+    addItem(louangeItems, louangeListEl, document.getElementById("louangeTitre"), document.getElementById("louangeAuteur"));
+});
+
+// Envoyer la liste
+document.getElementById("sendList").addEventListener("click", async ()=>{ 
+    const title = document.getElementById("repertoireTitle").value.trim();
+    const rawDate = document.getElementById("repertoireDate").value;
+    const date = formatDateToLetters(rawDate); // date en lettres
+    if(!title){ showMessage("Veuillez saisir un titre pour le répertoire !"); return; }
+    if(adorationItems.length===0 && louangeItems.length===0) { showMessage("Aucune chanson ajoutée !"); return; }
+
+    try{
+        const colRef = collection(db,"repertoire_jours");
+        await addDoc(colRef,{
+            titre: title,
+            date: date,  // envoyé à Firebase
+            adoration: adorationItems,
+            louange: louangeItems,
+            timestamp: serverTimestamp()
+        });
+        showMessage("Liste envoyée !");
+        displayListEl.innerHTML = `<h4>${title} ${date ? "(" + date + ")" : ""}</h4>`;
+        if(adorationItems.length) {
+            displayListEl.innerHTML += "<h4>Adoration</h4><ul>" + adorationItems.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+        }
+        if(louangeItems.length){
+            displayListEl.innerHTML += "<h4>Louange</h4><ul>" + louangeItems.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+        }
+        // reset listes locales
+        adorationListEl.innerHTML=""; louangeListEl.innerHTML="";
+        adorationItems.length=0; louangeItems.length=0;
+        document.getElementById("repertoireTitle").value="";
+        document.getElementById("repertoireDate").value="";
+    }catch(e){ console.error(e); showMessage("Erreur lors de l'envoi !"); }
+});
+
+// Supprimer toute la liste
+document.getElementById("clearList").addEventListener("click", async ()=>{ 
+    if(confirm("Supprimer toutes les entrées ?")){
+        try{
+            const q = query(collection(db,"repertoire_jours"));
+            const snapshot = await getDocs(q);
+            for(const d of snapshot.docs) await deleteDoc(doc(db,"repertoire_jours",d.id));
+            displayListEl.innerHTML="";
+            showMessage("Liste supprimée !");
+        }catch(e){ console.error(e); showMessage("Erreur !"); }
+    }
+});
+
+// Historique
+document.getElementById("historyBtn").addEventListener("click", async ()=>{ 
+    displayListEl.innerHTML="<h4>Historique des listes</h4>";
+    const q = query(collection(db,"repertoire_jours"), orderBy("timestamp","desc"));
+    const snapshot = await getDocs(q);
+    snapshot.forEach(docSnap=>{
+        const data = docSnap.data();
+        displayListEl.innerHTML += `<h4>${data.titre} ${data.date ? "(" + data.date + ")" : ""}</h4>`;
+        if(data.adoration?.length) displayListEl.innerHTML += "<h4>Adoration</h4><ul>" + data.adoration.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+        if(data.louange?.length) displayListEl.innerHTML += "<h4>Louange</h4><ul>" + data.louange.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+    });
+});
+</script>
+
+</body>
+</html>

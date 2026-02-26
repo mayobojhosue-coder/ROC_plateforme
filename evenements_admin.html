@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Événements Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin:0;
+    padding:20px;
+    background:#f0f2f5;
+    color:#0b3d91;
+}
+
+header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+header h1 {
+    font-size:2em;
+    margin:0;
+}
+
+.backButton {
+    padding:10px 20px;
+    font-size:16px;
+    border-radius:12px;
+    border:none;
+    background: linear-gradient(135deg,#0b3d91,#144ea1);
+    color:#fff;
+    cursor:pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.backButton:hover {
+    transform:scale(1.05);
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+}
+
+.eventList {
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    max-width:700px;
+    margin:auto;
+    margin-bottom:40px;
+}
+
+.eventCard {
+    background:#fff;
+    border-radius:15px;
+    box-shadow:0 6px 15px rgba(0,0,0,0.1);
+    overflow:hidden;
+    padding:15px 20px;
+    border-left:5px solid #0b3d91;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+}
+
+.eventCard:hover {
+    transform: translateY(-3px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.15);
+}
+
+.eventContent {
+    flex:1;
+}
+
+.eventTitle {
+    font-size:1.6em;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.eventDateTime {
+    font-size:0.95em;
+    background: #0b3d91;
+    color:#fff;
+    padding:6px 12px;
+    border-radius:12px;
+    display:inline-block;
+    margin-bottom:8px;
+}
+
+.eventLocation {
+    font-style:italic;
+    margin-bottom:10px;
+    color:#333;
+}
+
+.eventDescription {
+    font-size:1em;
+    color:#333;
+    line-height:1.4;
+}
+
+.eventCard img {
+    width:150px;
+    height:100px;
+    border-radius:12px;
+    margin-left:15px;
+    object-fit:cover;
+}
+
+.deleteButton {
+    background:#e53935;
+    color:#fff;
+    border:none;
+    padding:6px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-left:10px;
+}
+
+.deleteButton:hover {
+    transform:scale(1.05);
+    box-shadow:0 3px 8px rgba(0,0,0,0.3);
+}
+
+.addEventForm {
+    background:#fff;
+    padding:20px;
+    border-radius:15px;
+    max-width:700px;
+    margin:auto;
+    box-shadow:0 6px 15px rgba(0,0,0,0.1);
+    margin-bottom:40px;
+}
+
+.addEventForm input, .addEventForm textarea {
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+    border-radius:8px;
+    border:1px solid #0b3d91;
+}
+
+.addEventForm button {
+    padding:10px 20px;
+    font-size:16px;
+    border-radius:12px;
+    border:none;
+    background: linear-gradient(135deg,#0b3d91,#144ea1);
+    color:#fff;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.addEventForm button:hover {
+    transform:scale(1.05);
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+}
+
+.messageBox {
+    position: fixed;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#144ea1;
+    color:#fff;
+    padding:15px 25px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+    font-size:16px;
+    z-index:9999;
+    display:none;
+    opacity:0.95;
+}
+
+@media(max-width:480px){
+    header h1 { font-size:1.5em; }
+    .backButton { font-size:14px; padding:8px 16px; }
+    .eventTitle { font-size:1.3em; }
+    .eventDateTime { font-size:0.85em; padding:4px 8px; }
+    .eventDescription { font-size:0.9em; }
+    .eventCard img { width:100px; height:70px; margin-left:10px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Événements Admin</h1>
+    <button class="backButton" onclick="window.location.href='acceuil_admin.html'">Retour</button>
+</header>
+
+<div class="addEventForm">
+    <h2>Ajouter un événement</h2>
+    <input type="text" id="titre" placeholder="Titre">
+    <input type="text" id="lieu" placeholder="Lieu (optionnel)">
+    <input type="date" id="date">
+    <div style="display:flex; gap:10px;">
+        <input type="number" id="heure" placeholder="HH" min="0" max="23">
+        <input type="number" id="minute" placeholder="MM" min="0" max="59">
+    </div>
+    <textarea id="description" rows="4" placeholder="Description"></textarea>
+    <input type="text" id="imageUrl" placeholder="URL de l'image (optionnel)">
+    <button id="addEventBtn">Ajouter</button>
+</div>
+
+<div class="eventList" id="listeEvenements"></div>
+
+<div id="messageBox" class="messageBox"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "FAUX",
+  authDomain: "FAUX",
+  projectId: "rocplatforme",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const liste = document.getElementById("listeEvenements");
+const titreInput = document.getElementById("titre");
+const lieuInput = document.getElementById("lieu");
+const dateInput = document.getElementById("date");
+const heureInput = document.getElementById("heure");
+const minuteInput = document.getElementById("minute");
+const descriptionInput = document.getElementById("description");
+const imageUrlInput = document.getElementById("imageUrl");
+const addBtn = document.getElementById("addEventBtn");
+const messageBox = document.getElementById("messageBox");
+
+function showMessage(text,duration=3000){
+    messageBox.textContent=text;
+    messageBox.style.display='block';
+    setTimeout(()=>{messageBox.style.display='none';},duration);
+}
+
+// Ajouter événement
+addBtn.addEventListener('click', async ()=>{
+    const titre = titreInput.value.trim();
+    const lieu = lieuInput.value.trim();
+    const date = dateInput.value;
+    const heure = parseInt(heureInput.value);
+    const minute = parseInt(minuteInput.value);
+    const description = descriptionInput.value.trim();
+    const imageUrl = imageUrlInput.value.trim();
+
+    if(!titre || !date || isNaN(heure) || isNaN(minute) || heure<0||heure>23||minute<0||minute>59)
+        return showMessage("Remplissez le titre, la date et une heure valide !");
+
+    const formattedTime = `${heure.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}`;
+
+    try {
+        await addDoc(collection(db,"evenements"),{
+            titre, lieu, date, heure:formattedTime, description, imageUrl, timestamp:serverTimestamp()
+        });
+        titreInput.value=''; lieuInput.value=''; dateInput.value=''; heureInput.value=''; minuteInput.value=''; descriptionInput.value=''; imageUrlInput.value='';
+        showMessage("Événement ajouté !");
+    } catch(err){ console.error(err); showMessage("Erreur lors de l'ajout !"); }
+});
+
+// Affichage temps réel + suppression
+const q = query(collection(db,"evenements"), orderBy("date"));
+onSnapshot(q, snap=>{
+    liste.innerHTML='';
+    snap.forEach(docu=>{
+        const e = docu.data();
+        const div = document.createElement("div");
+        div.className="eventCard";
+        const contentDiv = document.createElement("div");
+        contentDiv.className="eventContent";
+
+        let html="";
+        if(e.imageUrl) html+=`<img src="${e.imageUrl}" alt="${e.titre}">`;
+        html+=`<div class="eventTitle">${e.titre}</div>`;
+        html+=`<div class="eventDateTime">${e.date} - ${e.heure}</div>`;
+        if(e.lieu) html+=`<div class="eventLocation">${e.lieu}</div>`;
+        if(e.description) html+=`<div class="eventDescription">${e.description}</div>`;
+
+        contentDiv.innerHTML=html;
+        div.appendChild(contentDiv);
+
+        const delBtn = document.createElement("button");
+        delBtn.className="deleteButton";
+        delBtn.textContent="Supprimer";
+        delBtn.addEventListener('click', async ()=>{
+            if(confirm(`Voulez-vous vraiment supprimer "${e.titre}" ?`)){
+                try { await deleteDoc(doc(db,"evenements",docu.id)); showMessage("Événement supprimé !"); }
+                catch(err){ console.error(err); showMessage("Erreur lors de la suppression !"); }
+            }
+        });
+        div.appendChild(delBtn);
+
+        liste.appendChild(div);
+    });
+});
+</script>
+
+</body>
+</html>

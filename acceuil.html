@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Acceuil Membres</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #fff;
+    color: #0b3d91;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+header h1 {
+    font-size: 1.8em;
+    margin: 0;
+}
+
+/* Boutons horizontaux */
+header .buttonsLeft {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+}
+
+header .buttonsLeft button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #0b3d91, #144ea1);
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+header .buttonsLeft button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+header .backButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #0b3d91, #144ea1);
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+header .backButton:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.contentBox {
+    background: rgba(0,0,0,0.1);
+    margin: 30px auto;
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    header h1 {
+        font-size: 1.5em;
+    }
+
+    header .buttonsLeft {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    header .buttonsLeft button,
+    header .backButton {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    .contentBox {
+        padding: 20px;
+    }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="buttonsLeft">
+        <h1>Acceuil</h1>
+        <button onclick="window.location.href='programmes.html'">Programmes</button>
+        <button onclick="window.location.href='evenements.html'">Événements</button>
+        <button onclick="window.location.href='outfit.html'">Outfits</button>
+        <button onclick="window.location.href='membres.html'">Membres</button>
+        <button onclick="window.location.href='liste_presence.html'">Liste de présence</button>
+        <button onclick="window.location.href='serviteurs.html'">Serviteurs</button>
+        <button onclick="window.location.href='repertoire.html'">Répertoire</button>
+    </div>
+    <button class="backButton" onclick="window.location.href='index.html'">Retour</button>
+</header>
+
+<div class="contentBox">
+    <p>Bienvenue aux membres, ici vous pouvez consulter les programmes, les événements, les outfits et accéder aux différents services.</p>
+</div>
+
+</body>
+</html>

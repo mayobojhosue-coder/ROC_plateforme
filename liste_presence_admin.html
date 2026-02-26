@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Liste de Présence Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin:0; padding:0;
+    background:#f5f5f5; color:#0b3d91;
+}
+header {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 20px; background:#e0e7ff;
+}
+header h1 { font-size:1.5em; margin:0; }
+header button {
+    padding:6px 14px; font-size:13px; border-radius:8px; border:none;
+    background:#0b3d91; color:#fff; cursor:pointer;
+}
+header button:hover { background:#144ea1; }
+
+main {
+    display:flex; flex-wrap:wrap; gap:15px; padding:10px 20px;
+}
+.sectionBox {
+    flex:1 1 250px; background:#fff; border:1px solid #0b3d91;
+    border-radius:8px; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.sectionBox h3 { margin-top:0; font-size:1.1em; border-bottom:1px solid #0b3d91; padding-bottom:4px; }
+.sectionBox ul { list-style:none; padding-left:0; max-height:200px; overflow-y:auto; margin-top:5px; }
+.sectionBox li { display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; font-size:0.95em; }
+.sectionBox li label { flex:1; cursor:pointer; }
+
+#sendList, #clearList, #historyBtn {
+    padding:10px 18px; font-size:14px; border:none; border-radius:8px;
+    background:#0b3d91; color:#fff; cursor:pointer; margin:10px 20px; display:block;
+}
+#sendList:hover, #clearList:hover, #historyBtn:hover { background:#144ea1; }
+
+#messageBox {
+    position:fixed; top:20px; left:50%; transform:translateX(-50%);
+    background:#0b3d91; color:#fff; padding:8px 16px; border-radius:8px; display:none; z-index:9999;
+}
+
+#historyContainer {
+    max-height:300px; overflow-y:auto; margin:10px 20px; padding:10px; border:1px solid #0b3d91; border-radius:8px; background:#fff; display:none;
+}
+
+@media(max-width:600px){ main { flex-direction:column; } }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Liste de Présence</h1>
+    <button id="btnRetour">Retour</button>
+</header>
+
+<main id="sectionsContainer"></main>
+
+<button id="sendList">Faire la liste de présence</button>
+<button id="clearList">Supprimer la dernière liste</button>
+<button id="historyBtn">Afficher l'historique</button>
+
+<div id="historyContainer"></div>
+<div id="messageBox"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBLL-lZEwvyiN-5IhCY0Yqpt_ZqYbbu4s",
+  authDomain: "rocplatforme.firebaseapp.com",
+  projectId: "rocplatforme",
+  storageBucket: "rocplatforme.firebasestorage.app",
+  messagingSenderId: "655073414371",
+  appId: "1:655073414371:web:0bd743e2bb5c0a23e9d6",
+  measurementId: "G-262B1D5NJV"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const sections = ["Soprano","Alto","Ténor","Basse","Musiciens","Sono"];
+const container = document.getElementById("sectionsContainer");
+const messageBox = document.getElementById("messageBox");
+const historyContainer = document.getElementById("historyContainer");
+const membresParSection = {};
+
+function showMessage(msg,duration=2500){
+    messageBox.textContent=msg;
+    messageBox.style.display="block";
+    setTimeout(()=>{messageBox.style.display="none";},duration);
+}
+
+// créer sections
+sections.forEach(sec=>{
+    membresParSection[sec]=[];
+    const box=document.createElement("div");
+    box.className="sectionBox";
+    box.innerHTML=`<h3>${sec}</h3><ul id="${sec.replace(/\s/g,'')}List"></ul>`;
+    container.appendChild(box);
+});
+
+// charger membres depuis Firestore
+async function loadMembers(){
+    const q = query(collection(db,"membres"), orderBy("timestamp"));
+    const snapshot = await getDocs(q);
+    snapshot.forEach(docSnap=>{
+        const data = docSnap.data();
+        if(data.section && data.nom && membresParSection[data.section]){
+            membresParSection[data.section].push(data.nom);
+            const ul = document.getElementById(data.section.replace(/\s/g,'')+"List");
+            const li = document.createElement("li");
+            li.innerHTML = `<label><input type="checkbox"> ${data.nom}</label>`;
+            ul.appendChild(li);
+        }
+    });
+}
+
+loadMembers();
+
+// envoyer la liste de présence avec date et présents/absents
+document.getElementById("sendList").addEventListener("click", async ()=>{
+    try{
+        const date = new Date();
+        const options = {day:"2-digit", month:"long", year:"numeric"};
+        const dateStr = `Liste de présence du ${date.toLocaleDateString("fr-FR",options)} - Répétition`;
+
+        const presenceData = [];
+        for(const sec of sections){
+            const ul = document.getElementById(sec.replace(/\s/g,'')+"List");
+            const lis = ul.querySelectorAll("li");
+            const presents = [], absents = [];
+            lis.forEach(li=>{
+                const cb = li.querySelector("input[type='checkbox']");
+                const nom = li.textContent.trim();
+                if(cb.checked) presents.push(nom);
+                else absents.push(nom);
+            });
+            presenceData.push({
+                section: sec,
+                presents,
+                absents
+            });
+        }
+
+        const colRef = collection(db,"historiques_presences");
+        await addDoc(colRef,{
+            date: dateStr,
+            data: presenceData,
+            timestamp: serverTimestamp()
+        });
+
+        showMessage("Liste de présence envoyée !");
+    }catch(e){
+        console.error(e);
+        showMessage("Erreur lors de l'envoi !");
+    }
+});
+
+// supprimer la dernière liste envoyée
+document.getElementById("clearList").addEventListener("click", async ()=>{
+    if(confirm("Supprimer la dernière liste envoyée ?")){
+        try{
+            const q = query(collection(db,"historiques_presences"), orderBy("timestamp","desc"));
+            const snapshot = await getDocs(q);
+            if(snapshot.docs.length>0){
+                await deleteDoc(doc(db,"historiques_presences",snapshot.docs[0].id));
+                showMessage("Dernière liste supprimée !");
+            } else {
+                showMessage("Aucune liste à supprimer !");
+            }
+        }catch(e){console.error(e); showMessage("Erreur lors de la suppression !");}
+    }
+});
+
+// afficher historique
+document.getElementById("historyBtn").addEventListener("click", async ()=>{
+    historyContainer.innerHTML="";
+    try{
+        const q = query(collection(db,"historiques_presences"), orderBy("timestamp","desc"));
+        const snapshot = await getDocs(q);
+        snapshot.forEach(docSnap=>{
+            const data = docSnap.data();
+            const div = document.createElement("div");
+            div.style.borderBottom="1px solid #0b3d91"; div.style.marginBottom="5px"; div.style.paddingBottom="5px";
+            div.innerHTML=`<strong>${data.date}</strong>`;
+            data.data.forEach(sec=>{
+                div.innerHTML+=`<div>${sec.section}: ${sec.presents.join(", ")}</div>`;
+            });
+            historyContainer.appendChild(div);
+        });
+        historyContainer.style.display="block";
+    }catch(e){console.error(e); showMessage("Erreur lors du chargement de l'historique !");}
+});
+
+// --- Bouton Retour sécurisé ---
+document.getElementById("btnRetour").addEventListener("click", ()=>{
+    const code = prompt("Entrez le mot de passe pour accéder à l'accueil :");
+    if(code === "0000"){
+        window.location.href = "acceuil_admin.html";
+    } else {
+        alert("Mot de passe incorrect !");
+    }
+});
+</script>
+
+</body>
+</html>
