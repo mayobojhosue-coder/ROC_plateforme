@@ -5,16 +5,28 @@
 <title>Acceuil Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+/* 🌌 FOND GRADIENT SPIRITUEL */
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
     margin: 0;
-    background: #fff;
-    color: #0b3d91;
-    min-height: 100vh;
     padding: 20px;
+    color: #f5f7ff;
+    min-height: 100vh;
     box-sizing: border-box;
+    background: linear-gradient(135deg, #0b2a6f, #1e4fd6, #0b3d91);
+    background-size: 400% 400%;
+    animation: gradientAnimation 15s ease infinite;
+    transition: background 1s ease-in-out;
 }
 
+/* Animation douce du gradient */
+@keyframes gradientAnimation {
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+/* HEADER */
 header {
     display: flex;
     justify-content: space-between;
@@ -24,6 +36,8 @@ header {
 header h1 {
     font-size: 1.8em;
     margin: 0;
+    color: #ffd966;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
 }
 
 /* Boutons horizontaux */
@@ -38,49 +52,51 @@ header .buttonsLeft h1 {
     margin-right: 20px;
 }
 
-header .buttonsLeft button {
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 12px;
-    border: none;
-    background: linear-gradient(135deg, #0b3d91, #144ea1);
-    color: #fff;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-header .buttonsLeft button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
+header .buttonsLeft button,
 header .backButton {
     padding: 10px 20px;
     font-size: 16px;
-    border-radius: 12px;
-    border: none;
-    background: linear-gradient(135deg, #0b3d91, #144ea1);
-    color: #fff;
+    border-radius: 18px;
+    border: 2px solid #ffd966;
+    background: linear-gradient(135deg, #0b2a6f, #1e4fd6);
+    color: #ffffff;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.55);
 }
 
+header .buttonsLeft button:hover,
 header .backButton:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 12px 28px rgba(255,217,102,0.7);
+    background: linear-gradient(135deg, #1e4fd6, #3a6cff);
 }
 
+/* CONTENU CENTRAL */
 .contentBox {
-    background: rgba(0,0,0,0.1);
+    background: rgba(10,20,50,0.88);
     margin: 30px auto;
     padding: 25px;
-    border-radius: 15px;
+    border-radius: 26px;
     width: 90%;
     max-width: 600px;
     text-align: center;
+    border: 2px solid rgba(255,217,102,0.95);
+    outline: 1px solid rgba(255,217,102,0.45);
+    outline-offset: 4px;
+    box-shadow:
+        0 0 20px rgba(255,217,102,0.6),
+        0 12px 36px rgba(0,0,0,0.65);
 }
 
-/* Mobile */
+.contentBox p {
+    margin: 0;
+    font-size: 1.2em;
+    line-height: 1.9;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+}
+
+/* MOBILE */
 @media (max-width: 480px) {
     header {
         flex-direction: column;
@@ -132,5 +148,4 @@ header .backButton:hover {
 </div>
 
 </body>
-
 </html>
