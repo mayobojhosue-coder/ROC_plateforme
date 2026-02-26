@@ -5,26 +5,112 @@
 <title>Membres - Pupitres & Musiciens</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-html, body { margin:0; padding:0; width:100%; height:100%; font-family:Arial,sans-serif; background:#fff; color:#0b3d91; }
-header { display:flex; justify-content:space-between; align-items:center; padding:15px 20px; background:rgba(11,61,145,0.1); }
-header h1 { font-size:1.6em; margin:0; }
-header button { padding:8px 16px; font-size:14px; border-radius:12px; border:none; background: linear-gradient(135deg,#0b3d91,#144ea1); color:#fff; cursor:pointer; transition:0.2s; }
-header button:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+/* 🌌 FOND SPIRITUEL */
+body {
+    margin: 0; padding: 20px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    min-height: 100vh;
+    color: #f5f7ff;
+    background: url('https://images.unsplash.com/photo-1598327104500-7dca0a5d6b77?auto=format&fit=crop&w=1470&q=80') center/cover no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
 
-main { display:flex; flex-wrap:wrap; padding:10px 20px; gap:15px; min-height:calc(100% - 70px); overflow-y:auto; }
-.sectionBox { flex:1 1 45%; background:rgba(11,61,145,0.05); border:1px solid #0b3d91; border-radius:10px; padding:10px; min-width:220px; max-width:400px; display:flex; flex-direction:column; }
-.sectionBox h3 { margin-top:0; font-size:1.1em; }
-.sectionBox ul { list-style:none; padding-left:0; margin-top:5px; flex:1; overflow-y:auto; max-height:250px; }
-.sectionBox li { margin-bottom:3px; font-size:0.95em; }
+/* HEADER */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-@media(max-width:800px){ main { flex-direction:column; } }
+header h1 {
+    font-size: 1.8em;
+    margin: 0;
+    color: #ffd966;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+}
+
+/* BOUTON RETOUR */
+header button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 18px;
+    border: 2px solid #ffd966;
+    background: linear-gradient(135deg, #0b2a6f, #1e4fd6);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.55);
+}
+
+header button:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 12px 28px rgba(255,217,102,0.7);
+    background: linear-gradient(135deg, #1e4fd6, #3a6cff);
+}
+
+/* MAIN & SECTIONS */
+main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px 10px;
+    min-height: calc(100vh - 80px);
+    overflow-y: auto;
+    justify-content: center;
+}
+
+.sectionBox {
+    flex: 1 1 45%;
+    background: rgba(0,0,0,0.75);
+    border: 2px solid #ffd966;
+    border-radius: 18px;
+    padding: 20px;
+    min-width: 220px;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+        0 0 20px rgba(255,217,102,0.5),
+        0 10px 30px rgba(0,0,0,0.7);
+}
+
+.sectionBox h3 {
+    margin-top: 0;
+    font-size: 1.3em;
+    color: #ffd966;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
+    border-bottom: 1px solid #ffd966;
+    padding-bottom: 5px;
+}
+
+.sectionBox ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 10px;
+    flex: 1;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.sectionBox li {
+    margin-bottom: 5px;
+    font-size: 1em;
+    color: #f5f7ff;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+
+/* MOBILE */
+@media(max-width:800px){
+    main { flex-direction: column; align-items: center; }
+}
 </style>
 </head>
 <body>
 
 <header>
     <h1>Pupitres - Membres</h1>
-    <button onclick="window.location.href='acceuil.html'">Retour</button>
+    <button onclick="window.location.href='acceuil_admin.html'">Retour</button>
 </header>
 
 <main id="sectionsContainer"></main>
@@ -62,7 +148,6 @@ sections.forEach(sec=>{
 // observer Firestore en temps réel
 const q = query(collection(db,"membres"), orderBy("timestamp"));
 onSnapshot(q, snapshot=>{
-    // réinitialiser les listes
     sections.forEach(sec => lists[sec].innerHTML="");
     snapshot.forEach(docSnap=>{
         const data = docSnap.data();
