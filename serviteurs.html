@@ -4,43 +4,127 @@
 <meta charset="UTF-8">
 <title>Serviteurs</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
+/* ===== FOND GENERAL ROYAL ===== */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin:0; padding:20px; background:#f0f4ff; color:#0b3d91;
+    margin:0;
+    padding:30px;
+    color:#f5e6b8;
+
+    background:
+        linear-gradient(rgba(5,20,60,0.85), rgba(5,20,60,0.85)),
+        url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkJj-l88rSgG6TxZShJpDFZ-17vAVmA6Ziwg&s");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
+
+/* ===== HEADER ===== */
 header {
-    display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:35px;
 }
-header h1 { font-size:2em; margin:0; font-weight:600; }
+
+header h1 {
+    font-size:2.8em;
+    margin:0;
+    font-weight:700;
+    color:#ffd700;
+    text-shadow:0 2px 8px rgba(0,0,0,0.6);
+}
+
 header button {
-    padding:10px 22px; font-size:16px; border-radius:12px; border:none;
-    background: linear-gradient(135deg,#0b3d91,#144ea1); color:#fff;
-    cursor:pointer; transition:0.3s; box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    padding:14px 30px;
+    font-size:18px;
+    border-radius:16px;
+    border:1px solid #ffd700;
+    background: linear-gradient(135deg,#0b3d91,#1a237e);
+    color:#ffd700;
+    cursor:pointer;
+    transition:0.3s;
+    box-shadow:0 6px 18px rgba(0,0,0,0.4);
 }
-header button:hover { transform:translateY(-2px); box-shadow:0 6px 15px rgba(0,0,0,0.25); }
 
+header button:hover {
+    transform:translateY(-2px);
+    box-shadow:0 10px 28px rgba(0,0,0,0.6);
+}
+
+/* ===== BOITE CENTRALE ===== */
 .contentBox {
-    background:#fff; margin:0 auto; padding:25px; border-radius:15px;
-    max-width:600px; box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    background:rgba(10,20,60,0.85);
+    margin:0 auto;
+    padding:35px;
+    border-radius:22px;
+    max-width:720px;
+    box-shadow:0 12px 35px rgba(0,0,0,0.6);
+    border:1px solid rgba(255,215,0,0.3);
 }
 
+/* ===== LISTE ===== */
 #serviteursList {
-    margin-top:20px; list-style:none; padding-left:0;
-    display:flex; flex-direction:column; gap:10px;
+    margin-top:25px;
+    list-style:none;
+    padding-left:0;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
 }
 
 #serviteursList li {
-    background:#e0e7ff; padding:10px 12px; border-radius:10px;
-    display:flex; justify-content:space-between; align-items:center;
-    font-weight:500; box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    background:linear-gradient(135deg,#102a6a,#0b3d91);
+    padding:16px 18px;
+    border-radius:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-weight:600;
+    font-size:1.1em;
+    color:#f5e6b8;
+    box-shadow:0 6px 18px rgba(0,0,0,0.45);
+    border-left:4px solid #ffd700;
 }
 
+/* ===== DATE ===== */
 #dateInfo {
-    margin-top:15px; font-size:0.95em; text-align:right; color:#144ea1;
+    margin-top:22px;
+    font-size:1em;
+    text-align:right;
+    color:#ffd700;
+    opacity:0.9;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width:600px) {
+    body {
+        padding:20px;
+    }
+
+    header h1 {
+        font-size:2.3em;
+    }
+
+    header button {
+        font-size:16px;
+        padding:12px 24px;
+    }
+
+    .contentBox {
+        padding:28px;
+    }
+
+    #serviteursList li {
+        font-size:1.15em;
+        padding:18px;
+    }
 }
 </style>
 </head>
+
 <body>
 
 <header>
@@ -77,6 +161,7 @@ async function loadServiteurs(){
     listEl.innerHTML = "";
     const snapshot = await getDocs(query(collection(db,"serviteurs"), orderBy("timestamp")));
     let lastUpdate = null;
+
     snapshot.forEach(docSnap => {
         const data = docSnap.data();
         lastUpdate = data.timestamp ? data.timestamp.toDate() : lastUpdate;
