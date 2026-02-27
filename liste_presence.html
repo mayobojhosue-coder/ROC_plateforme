@@ -2,22 +2,22 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Liste de Présence Membres</title>
+<title>Listes de Présence Membres</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-/* ===== FOND ROYAL ===== */
+/* ===== FOND ROYAL AVEC PROFONDEUR ===== */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin:0; padding:0;
     background:
         linear-gradient(rgba(5,20,60,0.85), rgba(5,20,60,0.85)),
-        url('https://images.unsplash.com/photo-1607618682034-14d2b7f1db20?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
-    background-size: cover;
-    color:#ffd700;
+        url('https://images.unsplash.com/photo-1607618682034-14d2b7f1db20?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed,
+        url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80') no-repeat left top;
+    background-size: cover, 200px auto;
+    background-attachment: fixed;
+    color:#e29506da;
     position: relative;
 }
-
-/* Overlay sombre déjà inclus via linear-gradient pour lisibilité */
 
 /* HEADER */
 header {
@@ -25,7 +25,7 @@ header {
     display:flex; justify-content:space-between; align-items:center;
     padding:15px 25px; 
     background: #0b3d91;
-    border-bottom: 4px solid #ffd700; /* or doré */
+    border-bottom: 4px solid #ffd700;
     color: #ffd700;
     box-shadow:0 4px 12px rgba(0,0,0,0.5);
 }
@@ -49,7 +49,7 @@ main {
 
 /* BLOCKS LISTE */
 .listBlock {
-    background: rgba(11,61,145,0.85); /* bleu roi sombre */
+    background: rgba(11,61,145,0.85);
     border:2px solid #ffd700;
     border-radius:15px; 
     padding:25px; 
@@ -102,7 +102,7 @@ main {
 <body>
 
 <header>
-    <h1>Liste de Présence</h1>
+    <h1>Listes de Présence</h1>
     <button onclick="window.location.href='acceuil.html'">Retour</button>
 </header>
 
@@ -148,7 +148,7 @@ async function loadPresence(){
 
         const block = document.createElement("div");
         block.className = "listBlock";
-        block.innerHTML = `<h2>Listes de présence du ${data.date}</h2>`;
+        block.innerHTML = `<h2>Liste de présence du ${data.date}</h2>`;
         container.appendChild(block);
 
         ["presents","absents"].forEach(type=>{
