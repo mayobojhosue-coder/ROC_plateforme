@@ -2,17 +2,18 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Membres - Pupitres & Musiciens</title>
+<title>Membres du ROC </title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-/* 🌌 FOND SPIRITUEL */
+/* ===== FOND ROYAL ===== */
 body {
     margin: 0; padding: 20px;
     font-family: "Segoe UI", Arial, sans-serif;
     min-height: 100vh;
     color: #f5f7ff;
-    background: url('https://images.unsplash.com/photo-1598327104500-7dca0a5d6b77?auto=format&fit=crop&w=1470&q=80') center/cover no-repeat;
-    background-attachment: fixed;
+    background:
+        linear-gradient(rgba(7, 11, 22, 0.8), rgba(3, 6, 12, 0.8)),
+        url('https://images.unsplash.com/photo-1598327104500-7dca0a5d6b77?auto=format&fit=crop&w=1470&q=80') center/cover no-repeat fixed;
     background-size: cover;
 }
 
@@ -24,23 +25,23 @@ header {
 }
 
 header h1 {
-    font-size: 1.8em;
+    font-size: 2em;
     margin: 0;
-    color: #ffd966;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    color: #f5ba08;
+    text-shadow: 2px 2px 10px rgba(8, 6, 14, 0.842);
 }
 
 /* BOUTON RETOUR */
 header button {
-    padding: 10px 20px;
+    padding: 10px 22px;
     font-size: 16px;
-    border-radius: 18px;
+    border-radius: 20px;
     border: 2px solid #ffd966;
     background: linear-gradient(135deg, #0b2a6f, #1e4fd6);
     color: #ffffff;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.55);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.55);
 }
 
 header button:hover {
@@ -53,63 +54,63 @@ header button:hover {
 main {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    padding: 20px 10px;
-    min-height: calc(100vh - 80px);
+    gap: 25px;
+    padding: 25px 15px;
+    min-height: calc(100vh - 90px);
     overflow-y: auto;
     justify-content: center;
 }
 
 .sectionBox {
     flex: 1 1 45%;
-    background: rgba(0,0,0,0.75);
-    border: 2px solid #ffd966;
-    border-radius: 18px;
-    padding: 20px;
-    min-width: 220px;
-    max-width: 400px;
+    background: rgba(11,61,145,0.85); /* bleu roi semi-transparent */
+    border: 2px solid #e7b10e;
+    border-radius: 20px;
+    padding: 25px;
+    min-width: 240px;
+    max-width: 420px;
     display: flex;
     flex-direction: column;
-    box-shadow:
-        0 0 20px rgba(255,217,102,0.5),
-        0 10px 30px rgba(0,0,0,0.7);
+    box-shadow: 0 0 25px rgba(255,217,102,0.5),
+                0 10px 35px rgba(0,0,0,0.7);
 }
 
 .sectionBox h3 {
     margin-top: 0;
-    font-size: 1.3em;
-    color: #ffd966;
-    text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
-    border-bottom: 1px solid #ffd966;
-    padding-bottom: 5px;
+    font-size: 1.4em;
+    color: #f0b70c;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    border-bottom: 2px solid #ffd966;
+    padding-bottom: 8px;
 }
 
 .sectionBox ul {
     list-style: none;
     padding-left: 0;
-    margin-top: 10px;
+    margin-top: 15px;
     flex: 1;
-    max-height: 250px;
+    max-height: 300px;
     overflow-y: auto;
 }
 
 .sectionBox li {
-    margin-bottom: 5px;
-    font-size: 1em;
+    margin-bottom: 6px;
+    font-size: 1.05em;
     color: #f5f7ff;
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
 }
 
 /* MOBILE */
 @media(max-width:800px){
     main { flex-direction: column; align-items: center; }
+    .sectionBox { max-width: 90%; }
 }
 </style>
 </head>
 <body>
 
 <header>
-    <h1>Pupitres - Membres</h1>
+    <h1>Membres du ROC</h1>
     <button onclick="window.location.href='acceuil_admin.html'">Retour</button>
 </header>
 
@@ -132,11 +133,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const sections = ["Soprano","Alto","Ténor","Basse","Musiciens","Sono"];
+const sections = ["Soprano","Alto","Ténor","Baryton","Musiciens","Sono"];
 const container = document.getElementById("sectionsContainer");
 const lists = {};
 
-// créer sections
+// Créer les sections
 sections.forEach(sec=>{
     const box = document.createElement("div");
     box.className = "sectionBox";
@@ -145,7 +146,7 @@ sections.forEach(sec=>{
     lists[sec] = document.getElementById(sec.replace(/\s/g,'')+"List");
 });
 
-// observer Firestore en temps réel
+// Observer Firestore en temps réel
 const q = query(collection(db,"membres"), orderBy("timestamp"));
 onSnapshot(q, snapshot=>{
     sections.forEach(sec => lists[sec].innerHTML="");
