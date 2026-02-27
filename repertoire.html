@@ -5,24 +5,132 @@
 <title>Répertoire Journée</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: Arial, sans-serif; margin:0; padding:20px; background:#f9f9f9; color:#0b3d91; }
-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-header h1 { font-size:1.8em; margin:0; }
-header button { padding:10px 20px; font-size:16px; border-radius:12px; border:none; background: linear-gradient(135deg,#0b3d91,#144ea1); color:#fff; cursor:pointer; transition:0.2s; }
-header button:hover { transform: scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3);}
-#displayList { background:#f0f4ff; padding:15px; border-radius:10px; margin:20px auto; max-width:600px; }
-#displayList h4 { margin:8px 0; font-size:1.2em; }
-#displayList ul { list-style:none; padding-left:0; margin:5px 0; }
-#displayList li { padding:5px 8px; background:#fff; margin-bottom:4px; border-radius:6px; }
-#messageBox { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#0b3d91; color:#fff; padding:8px 16px; border-radius:8px; display:none; z-index:9999; }
-#historyBtn { padding:8px 14px; font-size:14px; border:none; border-radius:8px; background:#0b3d91; color:#fff; cursor:pointer; margin:10px 0; display:block; }
-#historyBtn:hover { background:#144ea1; }
+body {
+    font-family: Arial, sans-serif;
+    margin:0;
+    padding:20px;
+    background: linear-gradient(180deg,#050b1e,#0b1f4d);
+    color:#f5f7ff;
+}
+
+/* HEADER */
+header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+header h1 {
+    font-size:1.9em;
+    margin:0;
+    color:#ffd966;
+    text-shadow:0 2px 6px rgba(0,0,0,0.6);
+}
+header button {
+    padding:10px 22px;
+    font-size:16px;
+    border-radius:14px;
+    border:2px solid #ffd966;
+    background: linear-gradient(135deg,#0b3d91,#144ea1);
+    color:#fff;
+    cursor:pointer;
+    transition:transform 0.2s, box-shadow 0.2s;
+}
+header button:hover {
+    transform: scale(1.05);
+    box-shadow:0 4px 14px rgba(255,217,102,0.6);
+}
+
+/* BOUTON HISTORIQUE */
+#historyBtn {
+    padding:10px 18px;
+    font-size:15px;
+    border:2px solid #ffd966;
+    border-radius:10px;
+    background:#0b3d91;
+    color:#fff;
+    cursor:pointer;
+    margin:10px 0;
+}
+#historyBtn:hover {
+    background:#144ea1;
+}
+
+/* LISTE */
+#displayList {
+    background: rgba(11,61,145,0.25);
+    padding:20px;
+    border-radius:16px;
+    margin:20px auto;
+    max-width:650px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.5);
+    border:2px solid #ffd966;
+}
+#displayList h4 {
+    margin:12px 0 6px 0;
+    font-size:1.3em;
+    color:#ffd966;
+}
+#displayList ul {
+    list-style:none;
+    padding-left:0;
+    margin:6px 0 12px 0;
+}
+#displayList li {
+    padding:8px 12px;
+    background: rgba(255,255,255,0.1);
+    margin-bottom:6px;
+    border-radius:8px;
+    color:#f5f7ff;
+}
+
+/* MESSAGE */
+#messageBox {
+    position:fixed;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#0b3d91;
+    color:#ffd966;
+    padding:10px 20px;
+    border-radius:10px;
+    display:none;
+    z-index:9999;
+    box-shadow:0 4px 14px rgba(0,0,0,0.5);
+}
+
+/* MOBILE */
+@media (max-width:480px){
+    body {
+        padding:25px;
+    }
+    header {
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
+    }
+    header h1 {
+        font-size:2.1em;
+    }
+    header button,
+    #historyBtn {
+        width:100%;
+        font-size:17px;
+        padding:14px;
+    }
+    #displayList {
+        padding:22px;
+    }
+    #displayList h4 {
+        font-size:1.5em;
+    }
+}
 </style>
 </head>
 <body>
 
 <header>
-    <h1>Répertoire Journée</h1>
+    <h1>Répertoires </h1>
     <button onclick="window.location.href='acceuil.html'">Retour</button>
 </header>
 
@@ -31,6 +139,7 @@ header button:hover { transform: scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0
 <div id="displayList">
     <p>Chargement du répertoire...</p>
 </div>
+
 <div id="messageBox"></div>
 
 <script type="module">
@@ -73,23 +182,25 @@ async function loadRepertoire(){
             const data = docSnap.data();
             displayListEl.innerHTML += `<h4>${data.titre} ${data.date ? "(" + data.date + ")" : ""}</h4>`;
             if(data.adoration?.length){
-                displayListEl.innerHTML += "<h4>Adoration</h4><ul>" + data.adoration.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+                displayListEl.innerHTML += "<h4>Adoration</h4><ul>" +
+                    data.adoration.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") +
+                    "</ul>";
             }
             if(data.louange?.length){
-                displayListEl.innerHTML += "<h4>Louange</h4><ul>" + data.louange.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+                displayListEl.innerHTML += "<h4>Louange</h4><ul>" +
+                    data.louange.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") +
+                    "</ul>";
             }
         });
-    }catch(e){ 
-        console.error(e); 
+    }catch(e){
+        console.error(e);
         displayListEl.innerHTML = "<p>Erreur lors du chargement du répertoire.</p>";
         showMessage("Erreur de chargement !");
     }
 }
 
-// Charger le répertoire au démarrage
 loadRepertoire();
 
-// Historique
 historyBtn.addEventListener("click", async ()=>{
     displayListEl.innerHTML="<h4>Historique des listes</h4>";
     try{
@@ -103,10 +214,14 @@ historyBtn.addEventListener("click", async ()=>{
             const data = docSnap.data();
             displayListEl.innerHTML += `<h4>${data.titre} ${data.date ? "(" + data.date + ")" : ""}</h4>`;
             if(data.adoration?.length){
-                displayListEl.innerHTML += "<h4>Adoration</h4><ul>" + data.adoration.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+                displayListEl.innerHTML += "<h4>Adoration</h4><ul>" +
+                    data.adoration.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") +
+                    "</ul>";
             }
             if(data.louange?.length){
-                displayListEl.innerHTML += "<h4>Louange</h4><ul>" + data.louange.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") + "</ul>";
+                displayListEl.innerHTML += "<h4>Louange</h4><ul>" +
+                    data.louange.map(i=>`<li>${i.titre} ${i.auteur? "(" + i.auteur + ")" : ""}</li>`).join("") +
+                    "</ul>";
             }
         });
     }catch(e){
